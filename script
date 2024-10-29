@@ -130,7 +130,7 @@ void handleRoot() {
   html += "<p>Temperatura Atual: " + String(temperatura) + " °C</p>";
 
   if (temperatura >= TEMPERATURA_LIMITE) {
-    html += "<p class='alert'>ALERTA: Temperatura Alta!</p>";
+    html += "<p class='alert'>ALERTA: Temperatura Alta!!!</p>";
   } else {
     html += "<p>Status: Temperatura Normal</p>";
   }
