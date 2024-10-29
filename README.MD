@@ -20,6 +20,7 @@ O software foi desenvolvido em C++ utilizando a plataforma Arduino IDE. O códig
 - **Sensor de Temperatura**: DS18B20
 - **Atuador**: Buzzer 3V
 - **Resistor**: 4.7kΩ (pull-up para o sensor DS18B20)
+- **Breadboard**: Breadboard de 170 furos para montagem do circuito
 - **Fonte de Alimentação**: Fonte 3.3V para o ESP32 e sensor
 - **Plataforma de Desenvolvimento**: Arduino IDE
 
@@ -28,6 +29,8 @@ O software foi desenvolvido em C++ utilizando a plataforma Arduino IDE. O códig
 - **ESP32**: Dimensões padrão de 58mm x 25mm.
 - **Sensor DS18B20**: Aproximadamente 15mm de comprimento, 5mm de diâmetro.
 - **Buzzer**: Dimensões variáveis, geralmente em torno de 20mm x 20mm.
+- **Breadboard de 170 Furos**: Dimensões de aproximadamente 46mm x 35mm, com 2 linhas de 17 furos de cada lado, ideal para prototipagem rápida de pequenos circuitos.
+- **Resistor 4.7kΩ**: Utilizado como resistor pull-up para o sensor DS18B20, garantindo uma leitura estável dos dados de temperatura.
 
 ## Documentação das Interfaces, Protocolos e Módulos de Comunicação
 
