@@ -11,8 +11,8 @@ DallasTemperature sensors(&oneWire);
 #define BUZZER_PIN 13 
 #define TEMPERATURA_LIMITE 50.0 
 
-const char* ssid = "CLARO_2G950775";       
-const char* password = "12950775";         
+const char* ssid = "Seu Wi-fi";       
+const char* password = "Sua senha";         
 
 const char* mqttServer = "broker.hivemq.com"; 
 const int mqttPort = 1883;                    
