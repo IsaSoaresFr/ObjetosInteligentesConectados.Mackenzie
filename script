@@ -1,0 +1,133 @@
+#include <WiFi.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <PubSubClient.h>
+#include <WebServer.h>
+
+#define SENSOR_PIN 15 
+OneWire oneWire(SENSOR_PIN);
+DallasTemperature sensors(&oneWire);
+
+#define BUZZER_PIN 13 
+#define TEMPERATURA_LIMITE 30.0 
+
+const char* ssid = "CLARO_2G950775";       
+const char* password = "12950775";         
+
+
+const char* mqttServer = "broker.hivemq.com"; 
+const int mqttPort = 1883;                     
+const char* mqttTopic = "seuTopico/temperatura"; 
+
+WiFiClient espClient;       
+PubSubClient client(espClient);  
+WebServer server(80);      
+
+void setup() {
+ 
+  Serial.begin(115200);
+  
+  sensors.begin();
+  
+  pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, LOW);
+
+  conectarWiFi();
+
+  client.setServer(mqttServer, mqttPort);
+
+  server.on("/", handleRoot);
+  server.on("/temperatura", handleTemperatura); 
+  server.begin();
+  Serial.println("Servidor Web iniciado.");
+}
+
+void loop() {
+
+  if (!client.connected()) {
+    reconnectMQTT();
+  }
+  client.loop();
+  
+  sensors.requestTemperatures();
+  float temperatura = sensors.getTempCByIndex(0);
+
+  Serial.print("Temperatura: ");
+  Serial.print(temperatura);
+  Serial.println(" C");
+
+  if (temperatura >= TEMPERATURA_LIMITE) {
+    digitalWrite(BUZZER_PIN, HIGH);
+    Serial.println("ALERTA: Alta Temperatura!");
+  } else {
+    digitalWrite(BUZZER_PIN, LOW);
+  }
+
+  enviarTemperaturaMQTT(temperatura);
+
+  server.handleClient();
+
+  delay(2000); 
+}
+
+void conectarWiFi() {
+  Serial.print("Conectando ao Wi-Fi...");
+  WiFi.begin(ssid, password);
+
+  int tentativas = 0; 
+  while (WiFi.status() != WL_CONNECTED && tentativas < 20) {
+    delay(500);
+    Serial.print(".");
+    tentativas++;
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\nWi-Fi conectado.");
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP()); 
+  } else {
+    Serial.println("\nFalha na conexão ao Wi-Fi.");
+  }
+}
+
+void reconnectMQTT() {
+  while (!client.connected()) {
+    Serial.print("Conectando ao MQTT...");
+    if (client.connect("ESP32Client")) {
+      Serial.println("Conectado.");
+    } else {
+      Serial.print("Falha ao conectar. Erro: ");
+      Serial.print(client.state());
+      delay(2000);
+    }
+  }
+}
+
+void enviarTemperaturaMQTT(float temperatura) {
+  char tempStr[8];
+  dtostrf(temperatura, 6, 2, tempStr); 
+  client.publish(mqttTopic, tempStr); 
+}
+
+void handleRoot() {
+  String mensagem = "<html><body><h1>Temperatura Atual</h1>";
+  mensagem += "<p id='temperatura'>Carregando...</p>";
+  mensagem += "<script>";
+  mensagem += "setInterval(function() {";
+  mensagem += "fetch('/temperatura').then(response => response.text()).then(data => {";
+  mensagem += "document.getElementById('temperatura').innerHTML = 'Temperatura: ' + data + ' °C';";
+  mensagem += "});";
+  mensagem += "}, 2000);"; 
+  mensagem += "</script>";
+  mensagem += "</body></html>";
+  
+  server.send(200, "text/html", mensagem);
+}
+
+
+void handleTemperatura() {
+  sensors.requestTemperatures(); 
+  float temperatura = sensors.getTempCByIndex(0);
+  String tempStr = String(temperatura, 2); 
+  server.send(200, "text/plain", tempStr); 
+}
